@@ -71,6 +71,12 @@ class CmdCb : public NimBLECharacteristicCallbacks {
 
 struct Tilt { float roll_deg; float pitch_deg; };
 
+// EMA smoothing: lower alpha = smoother but more lag (0.1 = heavy, 0.3 = moderate)
+static const float ALPHA = 0.05f;
+static float filtered_roll  = 0.0f;
+static float filtered_pitch = 0.0f;
+static bool  filter_init    = false;
+
 static Tilt readTilt() {
     int16_t rx, ry, rz;
     mpu.getAcceleration(&rx, &ry, &rz);
@@ -80,7 +86,16 @@ static Tilt readTilt() {
 
     float roll  = atan2f(ay, az) * 180.0f / (float)M_PI;
     float pitch = atan2f(-ax, sqrtf(ay * ay + az * az)) * 180.0f / (float)M_PI;
-    return { roll, pitch };
+
+    if (!filter_init) {
+        filtered_roll  = roll;
+        filtered_pitch = pitch;
+        filter_init    = true;
+    } else {
+        filtered_roll  = ALPHA * roll  + (1.0f - ALPHA) * filtered_roll;
+        filtered_pitch = ALPHA * pitch + (1.0f - ALPHA) * filtered_pitch;
+    }
+    return { filtered_roll, filtered_pitch };
 }
 
 static void doCalibrate() {

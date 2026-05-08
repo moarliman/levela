@@ -12,10 +12,16 @@ import kotlin.math.abs
 import kotlin.math.hypot
 import kotlin.math.max
 
-private const val MAX_TILT_DEG = 10f
+private const val MAX_TILT_DEG  = 10f
+private const val DEAD_ZONE_DEG = 0.15f
+
+private fun applyDeadZone(v: Float) = if (kotlin.math.abs(v) < DEAD_ZONE_DEG) 0f else v
 
 @Composable
 fun BubbleLevel(rollDeg: Float, pitchDeg: Float, modifier: Modifier = Modifier) {
+    val roll  = applyDeadZone(rollDeg)
+    val pitch = applyDeadZone(pitchDeg)
+
     Canvas(modifier = modifier.size(280.dp)) {
         val cx = size.width / 2f
         val cy = size.height / 2f
@@ -45,8 +51,8 @@ fun BubbleLevel(rollDeg: Float, pitchDeg: Float, modifier: Modifier = Modifier) 
 
         // Bubble position: roll = left/right, pitch = front/back
         // Bubble moves opposite to the high side (toward the low side)
-        val nx = (-rollDeg / MAX_TILT_DEG).coerceIn(-1f, 1f)
-        val ny = (pitchDeg / MAX_TILT_DEG).coerceIn(-1f, 1f)
+        val nx = (-roll / MAX_TILT_DEG).coerceIn(-1f, 1f)
+        val ny = (pitch / MAX_TILT_DEG).coerceIn(-1f, 1f)
         var dx = nx * (ringR - bubbleR)
         var dy = ny * (ringR - bubbleR)
         val mag = hypot(dx, dy)
@@ -56,7 +62,7 @@ fun BubbleLevel(rollDeg: Float, pitchDeg: Float, modifier: Modifier = Modifier) 
             dy = dy / mag * maxMag
         }
 
-        val tilt = max(abs(rollDeg), abs(pitchDeg))
+        val tilt = max(abs(roll), abs(pitch))
         val bubbleColor = when {
             tilt < 1f -> Color(0xFF2ECC71)
             tilt < 3f -> Color(0xFFF1C40F)
