@@ -2,6 +2,8 @@
 
 A camping trailer leveling helper using an ESP32 and a GY-521 (MPU6050) accelerometer. The ESP32 streams live tilt data over Bluetooth Low Energy to an Android companion app that shows a bubble level, pitch/roll angles, and a top-view diagram of the trailer for correct mounting orientation.
 
+![App screenshot](screenshot.png)
+
 ## Features
 
 - Live 20 Hz tilt data (pitch and roll) streamed over BLE
